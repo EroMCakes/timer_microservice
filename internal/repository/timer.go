@@ -1,3 +1,5 @@
+// repository/timer.go
+
 package repository
 
 import (
@@ -12,6 +14,7 @@ type TimerRepository interface {
 	FindByID(id uint) (*types.Timer, error)
 	Delete(id uint) error
 	FindAll() ([]types.Timer, error)
+	GetActiveTimers() ([]types.Timer, error)
 }
 
 type timerRepository struct {
@@ -49,6 +52,13 @@ func (r *timerRepository) FindAll() ([]types.Timer, error) {
 	return timers, err
 }
 
+func (r *timerRepository) GetActiveTimers() ([]types.Timer, error) {
+	var timers []types.Timer
+	err := r.db.Where("current_time > ? AND is_paused = ?", 0, false).Find(&timers).Error
+	return timers, err
+}
+
+// Migrate performs the database migration for the Timer model
 func Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(&types.Timer{})
 }

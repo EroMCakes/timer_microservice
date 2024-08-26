@@ -1,11 +1,7 @@
 package types
 
-import (
-	"gorm.io/gorm"
-)
-
 type Timer struct {
-	gorm.Model
+	ID          uint   `gorm:"primarykey"`
 	SessionID   string `gorm:"index"`
 	MaxTime     int64
 	CurrentTime int64

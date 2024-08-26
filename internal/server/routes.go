@@ -1,8 +1,11 @@
 package server
 
-import "timer-microservice/internal/handlers"
+import (
+	"timer-microservice/internal/handlers"
+	"timer-microservice/internal/websocket"
+)
 
-func (s *Server) SetupRoutes(th *handlers.TimerHandler, wsh *handlers.WebSocketHandler) {
+func (s *Server) SetupRoutes(th *handlers.TimerHandler, wsh *websocket.Handler) {
 	s.router.Post("/timer", th.CreateTimer)
 	s.router.Put("/timer/{id}/pause", th.PauseTimer)
 	s.router.Put("/timer/{id}/resume", th.ResumeTimer)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/go-redis/redis/v8"
@@ -15,6 +16,7 @@ import (
 	"timer-microservice/internal/repository"
 	"timer-microservice/internal/server"
 	"timer-microservice/internal/service"
+	"timer-microservice/internal/websocket"
 )
 
 func main() {
@@ -54,11 +56,22 @@ func main() {
 		DB:       0, // use default DB
 	})
 
+	_, err = redisClient.Ping(context.Background()).Result()
+	if err != nil {
+		sugar.Fatalf("Failed to connect to Redis: %v", err)
+	}
+
 	// Initialize repository
 	repo := repository.NewTimerRepository(gormDb)
 
+	// Initialize WebSocket handler
+	wsHandler := websocket.NewHandler(nil, sugar)
+
 	// Initialize service
-	timerService := service.NewTimerService(repo, sugar, redisClient)
+	timerService := service.NewTimerService(repo, sugar, redisClient, wsHandler)
+
+	// Set the service in WebSocket handler
+	wsHandler.SetService(timerService)
 
 	// Restore timers on startup
 	err = timerService.RestoreTimers()
@@ -66,9 +79,10 @@ func main() {
 		sugar.Errorw("Failed to restore timers", "error", err)
 	}
 
+	go timerService.StartTimerUpdates()
+
 	// Initialize handlers
-	timerHandler := handlers.NewTimerHandler(timerService, sugar)
-	wsHandler := handlers.NewWebSocketHandler(timerService, sugar)
+	timerHandler := handlers.NewTimerHandler(*timerService, sugar)
 
 	// Initialize and start server
 	srv := server.NewServer(cfg, sugar)
