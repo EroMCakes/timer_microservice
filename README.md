@@ -32,7 +32,7 @@ The Timer Microservice is a Go-based application designed to manage multiple tim
 
 ## Prerequisites
 
-- Go 1.17 or later
+- Go 1.22 or later
 - MySQL 8.0 or later
 - Redis 6.0 or later
 - Docker and Docker Compose (optional, for containerized deployment)
