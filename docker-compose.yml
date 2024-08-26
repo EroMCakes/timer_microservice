@@ -1,7 +1,22 @@
 version: '3.8'
-
 services:
-  mysql:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_ADDR=redis:6379
+  db:
     image: mysql:latest
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
@@ -9,9 +24,23 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "${DB_PORT}:3306"
+    - "${DB_PORT}:3306"
     volumes:
-      - mysql_volume:/var/lib/mysql
+    - mysql-data:/var/lib/mysql
+    - ./mysql-config:/etc/mysql/conf.d
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
+  timer-phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "80:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql  
+    depends_on:
+      - db
 
 volumes:
-  mysql_volume:
+  mysql-data:
