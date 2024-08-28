@@ -82,7 +82,7 @@ func main() {
 	go timerService.StartTimerUpdates()
 
 	// Initialize handlers
-	timerHandler := handlers.NewTimerHandler(*timerService, sugar)
+	timerHandler := handlers.NewTimerHandler(timerService, sugar)
 
 	// Initialize and start server
 	srv := server.NewServer(cfg, sugar)

@@ -13,11 +13,11 @@ import (
 )
 
 type TimerHandler struct {
-	service service.TimerService
+	service service.TimerServiceInterface
 	logger  *zap.SugaredLogger
 }
 
-func NewTimerHandler(service service.TimerService, logger *zap.SugaredLogger) *TimerHandler {
+func NewTimerHandler(service service.TimerServiceInterface, logger *zap.SugaredLogger) *TimerHandler {
 	return &TimerHandler{service: service, logger: logger}
 }
 

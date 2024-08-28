@@ -29,6 +29,11 @@ type TimerServiceInterface interface {
 	ModifyTimer(id uint, newMaxTime int64) (*types.Timer, error)
 }
 
+type HandlerInterface interface {
+	BroadcastTimerUpdate(timer *types.Timer)
+	SetService(service TimerServiceInterface)
+}
+
 type Handler struct {
 	service     TimerServiceInterface
 	logger      *zap.SugaredLogger

@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
-
 	"timer-microservice/internal/repository"
 	"timer-microservice/internal/types"
 	"timer-microservice/internal/websocket"
@@ -18,10 +18,22 @@ type TimerService struct {
 	logger    *zap.SugaredLogger
 	redis     *redis.Client
 	stopChan  chan struct{}
-	wsHandler *websocket.Handler
+	wsHandler websocket.HandlerInterface
 }
 
-func NewTimerService(repo repository.TimerRepository, logger *zap.SugaredLogger, redisClient *redis.Client, wsHandler *websocket.Handler) *TimerService {
+type TimerServiceInterface interface {
+	StartTimerUpdates()
+	StopTimerUpdates()
+	CreateTimer(sessionID string, maxTime int64) (*types.Timer, error)
+	PauseTimer(id uint) (*types.Timer, error)
+	ResumeTimer(id uint) (*types.Timer, error)
+	StopTimer(id uint) error
+	ModifyTimer(id uint, newMaxTime int64) (*types.Timer, error)
+	GetAllTimers() ([]types.Timer, error)
+	RestoreTimers() error
+}
+
+func NewTimerService(repo repository.TimerRepository, logger *zap.SugaredLogger, redisClient *redis.Client, wsHandler websocket.HandlerInterface) TimerServiceInterface {
 	return &TimerService{
 		repo:      repo,
 		logger:    logger,
@@ -150,7 +162,7 @@ func (s *TimerService) StopTimer(id uint) error {
 		return err
 	}
 
-	s.redis.Del(context.Background(), "timer:"+string(id))
+	s.redis.Del(context.Background(), "timer:"+fmt.Sprint(id))
 
 	return nil
 }
